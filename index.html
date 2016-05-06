@@ -35,7 +35,7 @@
 			<div class="row">
 				<div class="span8 col-md-8 columns eight large-8">
 					<div class="tab-content" id="tabs">
-						<div role="tabpanel" class="tab-pane active" id="events_list"><h1>Events</h1></div>
+						<div role="tabpanel" class="tab-pane active" id="events_list"><h1>Evenements</h1></div>
 						<div role="tabpanel" class="tab-pane" id="json_editor"/>	
 					</div>
 				</div>
@@ -121,7 +121,10 @@
 
 		$.getJSON("/events",function(events) {
 			events["features"].map(function(event) {
-				L.geoJson(event["geometry"]).addTo(drawnItems);
+				var geometry = L.geoJson(event["geometry"]);
+				geometry.eachLayer(function(layer) {
+					layer.addTo(drawnItems);
+				});
 			});
 
 			var source   = $("#entry-template").html();
@@ -160,6 +163,10 @@
 			var type = e.layerType,
 				layer = e.layer;
 			drawnItems.addLayer(e.layer);
+			// Switch tabs
+			$("#events_list").removeClass("active");
+			$("#json_editor").addClass("active");
+			return false;
 		});
 		
 	</script>
