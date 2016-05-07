@@ -6,7 +6,8 @@
   "properties": {
     "what" : {
       "type":"string",
-      "title":"Libellé de l'événement"
+      "title":"Libellé de l'événement",
+      "required":"true"
     },
     "when" : {
       "title":"Date et heure de début",

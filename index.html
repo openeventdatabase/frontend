@@ -35,14 +35,26 @@
 			<div class="row">
 				<div class="span8 col-md-8 columns eight large-8">
 					<div class="tab-content" id="tabs">
-						<div role="tabpanel" class="tab-pane active" id="events_list"><h1>Evenements</h1></div>
-						<div role="tabpanel" class="tab-pane" id="json_editor"/>	
+						<div role="tabpanel" class="tab-pane active" id="events_list">
+							<h1>Evenements</h1>
+							<div id="current"></div>
+						</div>
+						<div role="tabpanel" class="tab-pane container" id="editor">
+							<div id="json_editor"></div>
+							<button type="button" class="btn btn-default btn-lg" id="submit">
+							  <span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span> Confirmer
+							</button>
+							<button type="button" class="btn btn-default btn-lg" id="restore">
+							  <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span> Annuler
+							</button>
+							<div id="valid_indicator"/>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 		
-		<div id="submit"/><div id="restore"/><div id="valid_indicator"/>
+		
 
 	<script>      
       // Initialize the editor
@@ -52,20 +64,7 @@
         
         // The schema for the editor
         schema: {
-		  "title": "Evenement",
-		  "type": "object",
-		  "id": "event",
-		  "properties": {
-		    "what" : {
-		      "type":"string",
-		      "title":"Libellé de l'événement"
-		    },
-		    "when" : {
-		      "title":"Date et heure de début",
-		      "type" : "string",
-		      "format" : "datetime-local"
-		    }
-		  }
+        	$ref: "event-schema.json"
         },
 
         iconlib: "fontawesome4",
@@ -76,14 +75,41 @@
       });
       
       // Hook up the submit button to log to the console
-      document.getElementById('submit').addEventListener('click',function() {
-        // Get the value from the editor
-        console.log(editor.getValue());
+      $("#submit").on('click',function() {
+      	var geometry = tempLayer;
+      	if (editedId) {
+      		map.eachLayer(function(layer){
+      			if (layer.id == editedId) geometry = layer;
+      		});
+      	}
+      	var payload = {"properties":editor.getValue(),"geometry":geometry.toGeoJSON().geometry};
+      	//
+      	$.ajax({
+			url: editedId ? '/event/'+editedId : '/event',
+      		contentType: 'application/json',
+			type: editedId ? 'PUT' : 'POST',
+			data: JSON.stringify(payload),
+			processData: false,
+			success: function() {$("#events_list").trigger('refresh');}
+		});
+      	//
+		$("#events_list").addClass("active");
+		$("#editor").removeClass("active");
+		map.addControl(drawControl);
+		editedId = undefined;
       });
       
       // Hook up the Restore to Default button
-      document.getElementById('restore').addEventListener('click',function() {
-        editor.setValue(starting_value);
+      $("#restore").on('click',function() {
+		// Switch tabs
+		$("#events_list").addClass("active");
+		$("#editor").removeClass("active");
+		map.addControl(drawControl);
+		if (tempLayer) {
+			map.removeLayer(tempLayer);
+			tempLayer = undefined;
+		}
+		editedId = undefined;
       });
       
       // Hook up the validation indicator to update its 
@@ -91,18 +117,13 @@
       editor.on('change',function() {
         // Get an array of errors from the validator
         var errors = editor.validate();
-        
-        var indicator = document.getElementById('valid_indicator');
-        
         // Not valid
         if(errors.length) {
-          indicator.className = 'label alert';
-          indicator.textContent = 'not valid';
+        	$("#submit").addClass("disabled");
         }
         // Valid
         else {
-          indicator.className = 'label success';
-          indicator.textContent = 'valid';
+        	$("#submit").removeClass("disabled");
         }
       });
     </script>
@@ -119,32 +140,48 @@
 
 		$("#tabs").tab();
 
-		$.getJSON("/events",function(events) {
-			events["features"].map(function(event) {
-				var geometry = L.geoJson(event["geometry"]);
-				geometry.eachLayer(function(layer) {
-					layer.addTo(drawnItems);
-				});
-			});
-
-			var source   = $("#entry-template").html();
-			var template = Handlebars.compile(source);
-			$('#events_list').append(template(events));
-
-			$('#events_list a').click(function(item) {
-				// Load properties in editor
+		$("#events_list").on('refresh', function(e) {
+			$.getJSON("/events",function(events) {
 				events["features"].map(function(event) {
-					if (event.id == item.target.id) {
-						editor.setValue(event["properties"]);
-					}
+					var geometry = L.geoJson(event["geometry"]);
+					geometry.eachLayer(function(layer) {
+						layer.id = event["id"];
+						layer.addTo(drawnItems);
+						layer.on("mouseover",function(e){
+							var id = e.target.id;
+							$("#events_list #"+id).css('font-weight','bold');
+						});
+						layer.on("mouseout",function(e){
+							var id = e.target.id;
+							$("#events_list #"+id).css('font-weight','normal');
+						});
+					});
 				});
-				// TODO - focus map on layer
-				// Switch tabs
-				$("#events_list").removeClass("active");
-				$("#json_editor").addClass("active");
-				return false;
-			});
-		});		
+
+				var source   = $("#entry-template").html();
+				var template = Handlebars.compile(source);
+				$('#events_list #current').empty();
+				$('#events_list #current').append(template(events));
+
+				$('#events_list a').click(function(item) {
+					// Load properties in editor
+					events["features"].map(function(event) {
+						if (event.id == item.target.id) {
+							editor.setValue(event["properties"]);
+							editedId = event.id;
+						}
+					});
+					
+					// Disable edit
+					map.removeControl(drawControl);
+					// Switch tabs
+					$("#events_list").removeClass("active");
+					$("#editor").addClass("active");
+					return false;
+				});
+			});		
+		});
+		$("#events_list").trigger('refresh');
 
 		var drawControl = new L.Control.Draw({
 			draw: {
@@ -159,14 +196,27 @@
 		});
 		map.addControl(drawControl);
 
+		var tempLayer = undefined;
+		var editedId = undefined;
+
 		map.on('draw:created', function (e) {
 			var type = e.layerType,
 				layer = e.layer;
 			drawnItems.addLayer(e.layer);
+			tempLayer = e.layer;
+			editedId = undefined;
+			// Load values
+			editor.setValue({"what":"Nouvel événement"});
 			// Switch tabs
 			$("#events_list").removeClass("active");
-			$("#json_editor").addClass("active");
+			$("#editor").addClass("active");
+			// Disable edit
+			map.removeControl(drawControl);
 			return false;
+		});
+
+		map.on('layerremove',function(e){
+			console.debug(e.target);
 		});
 		
 	</script>
