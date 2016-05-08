@@ -259,6 +259,7 @@
 		});
 		map.on('draw:deletestop',function(e){
 			$("#events_list span").css("display","none");
+			deletedIds = [];
 		});
 		map.on('draw:edited',function(e){
 			var layers = e.layers;
