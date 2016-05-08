@@ -62,95 +62,95 @@
 		
 
 	<script>      
-      // Initialize the editor
-      var editor = new JSONEditor(document.getElementById('json_editor'),{
-        // Enable fetching schemas via ajax
-        ajax: true,
-        
-        // The schema for the editor
-        schema: {
-        	$ref: "event-schema.json"
-        },
+		// Initialize the editor
+		var editor = new JSONEditor(document.getElementById('json_editor'),{
+			// Enable fetching schemas via ajax
+			ajax: true,
 
-        iconlib: "fontawesome4",
-        theme: "bootstrap3",
-        
-        // Seed the form with a starting value
-        startval: {}
-      });
-      
-      $("#submit").on('click',function() {
-      	var geometry = tempLayer;
-      	if (editedId) {
-      		map.eachLayer(function(layer){
-      			if (layer.id == editedId) geometry = layer;
-      		});
-      	}
-      	var payload = {"properties":editor.getValue(),"geometry":geometry.toGeoJSON().geometry};
-      	//
-      	$.ajax({
-			url: editedId ? '/event/'+editedId : '/event',
-      		contentType: 'application/json',
-			type: editedId ? 'PUT' : 'POST',
-			data: JSON.stringify(payload),
-			processData: false,
-			success: function() {$("#events_list").trigger('refresh');}
+			// The schema for the editor
+			schema: {
+				$ref: "event-schema.json"
+			},
+
+			iconlib: "fontawesome4",
+			theme: "bootstrap3",
+
+			// Seed the form with a starting value
+			startval: {}
 		});
-      	//
-		$("#events_list").addClass("active");
-		$("#editor").removeClass("active");
-		map.addControl(drawControl);
-		editedId = undefined;
-      });
 
-      $("#delete").on('click',function() {
-		var geometry = tempLayer;
-		if (editedId) {
-			map.eachLayer(function(layer){
-				if (layer.id == editedId) geometry = layer;
+		$("#submit").on('click',function() {
+			var geometry = tempLayer;
+			if (editedId) {
+				map.eachLayer(function(layer){
+					if (layer.id == editedId) geometry = layer;
+				});
+			}
+			var payload = {"properties":editor.getValue(),"geometry":geometry.toGeoJSON().geometry};
+			//
+			$.ajax({
+				url: editedId ? '/event/'+editedId : '/event',
+				contentType: 'application/json',
+				type: editedId ? 'PUT' : 'POST',
+				data: JSON.stringify(payload),
+				processData: false,
+				success: function() {$("#events_list").trigger('refresh');}
 			});
-		}
-		map.removeLayer(geometry);
+			//
+			$("#events_list").addClass("active");
+			$("#editor").removeClass("active");
+			map.addControl(drawControl);
+			editedId = undefined;
+			});
 
-		$.ajax({
-			url: '/event/'+editedId,
-			type: 'DELETE',
-			success: function() {$("#events_list").trigger('refresh');}
+			$("#delete").on('click',function() {
+			var geometry = tempLayer;
+			if (editedId) {
+				map.eachLayer(function(layer){
+					if (layer.id == editedId) geometry = layer;
+				});
+			}
+			map.removeLayer(geometry);
+
+			$.ajax({
+				url: '/event/'+editedId,
+				type: 'DELETE',
+				success: function() {$("#events_list").trigger('refresh');}
+			});
+			//
+			$("#events_list").addClass("active");
+			$("#editor").removeClass("active");
+			map.addControl(drawControl);
+			editedId = undefined;
 		});
-		//
-		$("#events_list").addClass("active");
-		$("#editor").removeClass("active");
-		map.addControl(drawControl);
-		editedId = undefined;
-      });
 
-      $("#restore").on('click',function() {
-		// Switch tabs
-		$("#events_list").addClass("active");
-		$("#editor").removeClass("active");
-		map.addControl(drawControl);
-		if (tempLayer) {
-			map.removeLayer(tempLayer);
-			tempLayer = undefined;
-		}
-		editedId = undefined;
-      });
-      
-      // Hook up the validation indicator to update its 
-      // status whenever the editor changes
-      editor.on('change',function() {
-        // Get an array of errors from the validator
-        var errors = editor.validate();
-        // Not valid
-        if(errors.length) {
-        	$("#submit").addClass("disabled");
-        }
-        // Valid
-        else {
-        	$("#submit").removeClass("disabled");
-        }
-      });
-    </script>
+		$("#restore").on('click',function() {
+			// Switch tabs
+			$("#events_list").addClass("active");
+			$("#editor").removeClass("active");
+			map.addControl(drawControl);
+			if (tempLayer) {
+				map.removeLayer(tempLayer);
+				tempLayer = undefined;
+			}
+			editedId = undefined;
+		});
+
+		// Hook up the validation indicator to update its
+		// status whenever the editor changes
+		editor.on('change',function() {
+			// Get an array of errors from the validator
+			var errors = editor.validate();
+			// Not valid
+			if(errors.length) {
+				$("#submit").addClass("disabled");
+			}
+			// Valid
+			else {
+				$("#submit").removeClass("disabled");
+			}
+		});
+	</script>
 
 	<script>
 	
@@ -164,8 +164,10 @@
 
 		$("#tabs").tab();
 
+		var all_events = undefined;
 		$("#events_list").on('refresh', function(e) {
 			$.getJSON("/events",function(events) {
+				all_events = events;
 				drawnItems.eachLayer(function(l){drawnItems.removeLayer(l)});
 				events["features"].map(function(event) {
 					var geometry = L.geoJson(event["geometry"]);
@@ -205,7 +207,7 @@
 					$("#editor").addClass("active");
 					return false;
 				});
-			});		
+			});
 		});
 		$("#events_list").trigger('refresh');
 
@@ -254,10 +256,10 @@
 					success: function() {$("#events_list").trigger('refresh');}
 				});
 			});
-		})
+		});
 		map.on('draw:deletestop',function(e){
 			$("#events_list span").css("display","none");
-		})
+		});
 
 	</script>
 	</body>
