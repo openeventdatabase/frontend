@@ -24,7 +24,9 @@
 		<script id="entry-template" type="text/x-handlebars-template">
 			{{#each features}}
 				<div class="entry">
-					<a id="{{id}}" href="#">{{properties.what}}</a>
+					<a id="{{id}}" href="#">{{properties.what}}
+					<span class="glyphicon glyphicon-remove-circle" style="display:none;"/>
+					</a>
 				</div>
 			{{/each}}
 		</script>
@@ -74,7 +76,6 @@
         startval: {}
       });
       
-      // Hook up the submit button to log to the console
       $("#submit").on('click',function() {
       	var geometry = tempLayer;
       	if (editedId) {
@@ -144,6 +145,7 @@
 			$.getJSON("/events",function(events) {
 				events["features"].map(function(event) {
 					var geometry = L.geoJson(event["geometry"]);
+					geometry.id = event["id"];
 					geometry.eachLayer(function(layer) {
 						layer.id = event["id"];
 						layer.addTo(drawnItems);
@@ -198,6 +200,7 @@
 
 		var tempLayer = undefined;
 		var editedId = undefined;
+		var deletedIds = [];
 
 		map.on('draw:created', function (e) {
 			var type = e.layerType,
@@ -216,9 +219,22 @@
 		});
 
 		map.on('layerremove',function(e){
-			console.debug(e.target);
+			deletedIds.push(e.layer.id);
+			$("#events_list #"+e.layer.id+" span").css("display","inline");
 		});
-		
+		map.on('draw:deleted',function(e){
+			deletedIds.map(function(id) {
+				$.ajax({
+					url: '/event/'+id,
+					type: 'DELETE',
+					success: function() {$("#events_list").trigger('refresh');}
+				});
+			});
+		})
+		map.on('draw:deletestop',function(e){
+			$("#events_list span").css("display","none");
+		})
+
 	</script>
 	</body>
 </html>
