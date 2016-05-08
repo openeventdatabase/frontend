@@ -260,6 +260,26 @@
 		map.on('draw:deletestop',function(e){
 			$("#events_list span").css("display","none");
 		});
+		map.on('draw:edited',function(e){
+			var layers = e.layers;
+			layers.eachLayer(function (layer) {
+				var properties = undefined;
+				all_events["features"].map(function(feature) {
+					if (feature.id == layer.id)
+						properties = feature.properties;
+				});
+				var payload = {"properties":properties,"geometry":layer.toGeoJSON().geometry};
+				//
+				$.ajax({
+					url: '/event/'+layer.id,
+					contentType: 'application/json',
+					type: 'PUT',
+					data: JSON.stringify(payload),
+					processData: false,
+					success: function() {$("#events_list").trigger('refresh');}
+				});
+			});
+		});
 
 	</script>
 	</body>
