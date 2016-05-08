@@ -143,6 +143,7 @@
 
 		$("#events_list").on('refresh', function(e) {
 			$.getJSON("/events",function(events) {
+				drawnItems.eachLayer(function(l){drawnItems.removeLayer(l)});
 				events["features"].map(function(event) {
 					var geometry = L.geoJson(event["geometry"]);
 					geometry.id = event["id"];
