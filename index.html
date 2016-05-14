@@ -21,6 +21,8 @@
 
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
 
+		<script language="JavaScript" type="text/javascript" src="http://kjur.github.io/jsrsasign/jsrsasign-latest-all-min.js"></script>
+
 		<script id="entry-template" type="text/x-handlebars-template">
 			{{#each features}}
 				<div class="entry">
@@ -34,7 +36,7 @@
 	<body>
 		<div id="map" style="position: absolute; top: 0; left: 0; width: 50%; height: 100%;"></div>
 		<div class="container" style="position: absolute; top: 0; left: 50%; width: 50%; height: 100%; margin: 20px;">
-			<div class="row">
+			<div class="row" style="height: 90%;">
 				<div class="span8 col-md-8 columns eight large-8">
 					<div class="tab-content" id="tabs">
 						<div role="tabpanel" class="tab-pane active" id="events_list">
@@ -52,16 +54,41 @@
 							<button type="button" class="btn btn-default btn-lg" id="delete">
 							  <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Supprimer
 							</button>
-							<div id="valid_indicator"/>
 						</div>
 					</div>
 				</div>
+			</div>
+			<div class="row">
+				<textarea id="key" style="width: 95%;"></textarea>
 			</div>
 		</div>
 		
 		
 
-	<script>      
+	<script>
+	function send(properties,geometry,id) {
+		var payload = {"properties":properties,"geometry":geometry};
+		if ($("#key").val()) {
+			var oHeader = {alg: 'RS256', typ: 'JWT'};
+			var sHeader = JSON.stringify(oHeader);
+			var sPayload = JSON.stringify(payload);
+			var prvKey = KEYUTIL.getKey($("#key").val(), "password");
+			var sJWT = KJUR.jws.JWS.sign(oHeader.alg, sHeader, sPayload, prvKey);
+			payload["signature"] = sJWT;
+		}
+		//
+		$.ajax({
+			url: id ? '/event/'+id : '/event',
+			contentType: 'application/json',
+			type: id ? 'PUT' : 'POST',
+			data: JSON.stringify(payload),
+			processData: false,
+			success: function() {$("#events_list").trigger('refresh');}
+		});
+
+	}
+
+
 		// Initialize the editor
 		var editor = new JSONEditor(document.getElementById('json_editor'),{
 			// Enable fetching schemas via ajax
@@ -86,16 +113,7 @@
 					if (layer.id == editedId) geometry = layer;
 				});
 			}
-			var payload = {"properties":editor.getValue(),"geometry":geometry.toGeoJSON().geometry};
-			//
-			$.ajax({
-				url: editedId ? '/event/'+editedId : '/event',
-				contentType: 'application/json',
-				type: editedId ? 'PUT' : 'POST',
-				data: JSON.stringify(payload),
-				processData: false,
-				success: function() {$("#events_list").trigger('refresh');}
-			});
+			send(editor.getValue(),geometry.toGeoJSON().geometry,editedId);
 			//
 			$("#events_list").addClass("active");
 			$("#editor").removeClass("active");
@@ -269,16 +287,7 @@
 					if (feature.id == layer.id)
 						properties = feature.properties;
 				});
-				var payload = {"properties":properties,"geometry":layer.toGeoJSON().geometry};
-				//
-				$.ajax({
-					url: '/event/'+layer.id,
-					contentType: 'application/json',
-					type: 'PUT',
-					data: JSON.stringify(payload),
-					processData: false,
-					success: function() {$("#events_list").trigger('refresh');}
-				});
+				send(properties,layer.toGeoJSON().geometry,layer.id);
 			});
 		});
 
