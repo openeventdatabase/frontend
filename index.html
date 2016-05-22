@@ -78,7 +78,7 @@
 		}
 		//
 		$.ajax({
-			url: id ? '/event/'+id : '/event',
+			url: id ? 'http://api.openeventdatabase.org/event/'+id : 'http://api.openeventdatabase.org/event',
 			contentType: 'application/json',
 			type: id ? 'PUT' : 'POST',
 			data: JSON.stringify(payload),
@@ -131,7 +131,7 @@
 			map.removeLayer(geometry);
 
 			$.ajax({
-				url: '/event/'+editedId,
+				url: 'http://api.openeventdatabase.org/event/'+editedId,
 				type: 'DELETE',
 				success: function() {$("#events_list").trigger('refresh');}
 			});
@@ -184,7 +184,9 @@
 
 		var all_events = undefined;
 		$("#events_list").on('refresh', function(e) {
-			$.getJSON("/events",function(events) {
+			var box = [map.getBounds()._northEast.lng,map.getBounds()._southWest.lat,map.getBounds()._southWest.lng,map.getBounds()._northEast.lat];
+			var bbox = box.join(",")
+			$.getJSON("http://api.openeventdatabase.org/event?geom=full&bbox="+bbox,function(events) {
 				all_events = events;
 				drawnItems.eachLayer(function(l){drawnItems.removeLayer(l)});
 				events["features"].map(function(event) {
@@ -269,7 +271,7 @@
 		map.on('draw:deleted',function(e){
 			deletedIds.map(function(id) {
 				$.ajax({
-					url: '/event/'+id,
+					url: 'http://api.openeventdatabase.org/event/'+id,
 					type: 'DELETE',
 					success: function() {$("#events_list").trigger('refresh');}
 				});
