@@ -26,7 +26,7 @@
 		<script id="entry-template" type="text/x-handlebars-template">
 			{{#each features}}
 				<div class="entry">
-					<a id="{{id}}" href="#">{{properties.what}}
+					<a id="{{id}}" href="#">{{properties.what:name}}
 					<span class="glyphicon glyphicon-remove-circle" style="display:none;"/>
 					</a>
 				</div>
@@ -186,7 +186,7 @@
 		$("#events_list").on('refresh', function(e) {
 			var box = [map.getBounds()._northEast.lng,map.getBounds()._southWest.lat,map.getBounds()._southWest.lng,map.getBounds()._northEast.lat];
 			var bbox = box.join(",")
-			$.getJSON("http://api.openeventdatabase.org/event?geom=full&bbox="+bbox,function(events) {
+			$.getJSON("http://api.openeventdatabase.org/event?what=alert&stop=30160101&geom=full&bbox="+bbox,function(events) {
 				all_events = events;
 				drawnItems.eachLayer(function(l){drawnItems.removeLayer(l)});
 				events["features"].map(function(event) {
