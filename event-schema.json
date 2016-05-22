@@ -5,14 +5,36 @@
   "id": "event",
   "properties": {
     "what" : {
+      "enum": ["alert"],
+      "required":"true"
+    },
+    "what:name" : {
       "type":"string",
       "title":"Libellé de l'événement",
       "required":"true"
     },
-    "when" : {
+    "start" : {
       "title":"Date et heure de début",
       "type" : "string",
       "format" : "datetime-local"
+    },
+    "stop" : {
+      "title":"Date et heure de début",
+      "type" : "string",
+      "format" : "datetime-local"
+    },
+    "alert_level" : {
+      "enum": ["none","emergency"],
+      "title":"Diffusion d'une alerte",
+      "required":"true"
+    },
+    "alert_message" : {
+      "type":"string",
+      "title":"Message à diffuser"
+    },
+    "type" : {
+      "enum": ["scheduled","unplanned"],
+      "required":"true"
     }
   }
 }
