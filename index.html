@@ -82,6 +82,7 @@
 			contentType: 'application/json',
 			type: id ? 'PUT' : 'POST',
 			data: JSON.stringify(payload),
+			headers: {},
 			processData: false,
 			success: function() {$("#events_list").trigger('refresh');}
 		});
@@ -133,6 +134,7 @@
 			$.ajax({
 				url: 'http://api.openeventdatabase.org/event/'+editedId,
 				type: 'DELETE',
+				headers: {},
 				success: function() {$("#events_list").trigger('refresh');}
 			});
 			//
@@ -273,6 +275,7 @@
 				$.ajax({
 					url: 'http://api.openeventdatabase.org/event/'+id,
 					type: 'DELETE',
+					headers: {},
 					success: function() {$("#events_list").trigger('refresh');}
 				});
 			});
