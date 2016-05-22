@@ -79,7 +79,6 @@
 		//
 		$.ajax({
 			url: id ? 'http://api.openeventdatabase.org/event/'+id : 'http://api.openeventdatabase.org/event',
-			contentType: 'application/json',
 			type: id ? 'PUT' : 'POST',
 			data: JSON.stringify(payload),
 			headers: {},
