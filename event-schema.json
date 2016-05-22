@@ -5,23 +5,30 @@
   "id": "event",
   "properties": {
     "what" : {
+      "title":"Nature de l'événement",
       "enum": ["alert"],
+      "default": "alert",
       "required":"true"
     },
     "what:name" : {
       "type":"string",
       "title":"Libellé de l'événement",
+      "default": "Nouvel événement",
       "required":"true"
     },
     "start" : {
       "title":"Date et heure de début",
       "type" : "string",
-      "format" : "datetime-local"
+      "default": "2016-10-01",
+      "format" : "datetime-local",
+      "required":"true"
     },
     "stop" : {
-      "title":"Date et heure de début",
+      "title":"Date et heure de fin",
       "type" : "string",
-      "format" : "datetime-local"
+      "default": "2016-10-01",
+      "format" : "datetime-local",
+      "required":"true"
     },
     "alert_level" : {
       "enum": ["none","emergency"],
@@ -33,7 +40,9 @@
       "title":"Message à diffuser"
     },
     "type" : {
+      "title":"Type de l'événement",
       "enum": ["scheduled","unplanned"],
+      "default": "scheduled",
       "required":"true"
     }
   }
