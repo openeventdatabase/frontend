@@ -190,7 +190,7 @@
 		$("#events_list").on('refresh', function(e) {
 			var box = [map.getBounds()._northEast.lng,map.getBounds()._southWest.lat,map.getBounds()._southWest.lng,map.getBounds()._northEast.lat];
 			var bbox = box.join(",")
-			$.getJSON("http://localhost:8080/event?what=alert&stop=30160101&geom=full&bbox="+bbox,function(events) {
+			$.getJSON(endpoint+"?what=alert&stop=30160101&geom=full&bbox="+bbox,function(events) {
 				all_events = events;
 				drawnItems.eachLayer(function(l){drawnItems.removeLayer(l)});
 				events["features"].map(function(event) {
