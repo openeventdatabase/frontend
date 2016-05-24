@@ -297,6 +297,9 @@
 				send(properties,layer.toGeoJSON().geometry,layer.id);
 			});
 		});
+		map.on('zoomend',function() {
+			$("#events_list").trigger('refresh');
+		});
 
 	</script>
 	</body>
