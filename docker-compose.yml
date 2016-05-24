@@ -8,10 +8,3 @@ services:
       - 80:80
     volumes:
       - .:/var/www/html
-    external_links:
-      - openeventdatabase_backend_1:backend
-
-networks:
-  default:
-    external:
-      name: openeventdatabase_default
