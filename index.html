@@ -291,7 +291,7 @@
 			layers.eachLayer(function (layer) {
 				var properties = undefined;
 				all_events["features"].map(function(feature) {
-					if (feature.id == layer.id)
+					if (feature.properties.id == layer.id)
 						properties = feature.properties;
 				});
 				send(properties,layer.toGeoJSON().geometry,layer.id);
