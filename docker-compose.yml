@@ -6,5 +6,3 @@ services:
       context: .
     ports:
       - 80:80
-    volumes:
-      - .:/var/www/html
