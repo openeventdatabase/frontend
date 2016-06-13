@@ -179,7 +179,8 @@
 		var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 			osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 			osm = L.tileLayer(osmUrl, {maxZoom: 18, attribution: osmAttrib}),
-			map = new L.Map('map', {layers: [osm], center: new L.LatLng(48.9244643, 2.3594117), zoom: 15 });
+			prefs = JSON.parse(localStorage.getItem("mapPrefs")),
+			map = new L.Map('map', $.extend({layers: [osm], center: new L.LatLng(48.9244643, 2.3594117), zoom: 15 },prefs));
 
 		var drawnItems = new L.FeatureGroup();
 		map.addLayer(drawnItems);
@@ -297,7 +298,8 @@
 				send(properties,layer.toGeoJSON().geometry,layer.id);
 			});
 		});
-		map.on('zoomend',function() {
+		map.on('zoomend moveend',function() {
+			localStorage.setItem("mapPrefs",JSON.stringify({zoom:map.getZoom(),center:map.getCenter()}))
 			$("#events_list").trigger('refresh');
 		});
 
