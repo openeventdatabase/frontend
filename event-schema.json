@@ -6,8 +6,8 @@
   "properties": {
     "what" : {
       "type":"string",
-      "title":"Nature de l'événement",
-      "enum": ["alert"],
+      "title":"Niveau d'alerte",
+      "enum": ["alert.supervision","alert.emergency"],
       "default": "alert",
       "required":"true"
     },
@@ -29,12 +29,6 @@
       "type" : "string",
       "default": "2016-10-01",
       "format" : "datetime-local",
-      "required":"true"
-    },
-    "alert_level" : {
-      "type":"string",
-      "enum": ["none","emergency"],
-      "title":"Diffusion d'une alerte",
       "required":"true"
     },
     "alert_message" : {
