@@ -71,12 +71,15 @@
 	function send(properties,geometry,id) {
 		var payload = {"properties":properties,"geometry":geometry};
 		if ($("#key").val()) {
+			delete payload.properties.createdate;
+			delete payload.properties.id;
+			delete payload.properties.lastupdate;
 			var oHeader = {alg: 'RS256', typ: 'JWT'};
 			var sHeader = JSON.stringify(oHeader);
 			var sPayload = JSON.stringify(payload);
 			var prvKey = KEYUTIL.getKey($("#key").val(), "password");
 			var sJWT = KJUR.jws.JWS.sign(oHeader.alg, sHeader, sPayload, prvKey);
-			payload["signature"] = sJWT;
+			payload.properties["signed"] = sJWT;
 		}
 		//
 		$.ajax({
