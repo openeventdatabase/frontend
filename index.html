@@ -58,26 +58,45 @@
 					</div>
 				</div>
 			</div>
-			<div class="row">
-				<textarea id="key" style="width: 95%;"></textarea>
+			<div id="keydiv" class="row">
 			</div>
 		</div>
 		
 		
 
 	<script>
+
+if (typeof(window.crypto.signText)=="undefined" && typeof(window.msCrypto.signText)=="undefined")
+{
+  $("#keydiv").append('<textarea id="key" style="width: 95%;"></textarea>');
+}
+
 	var endpoint = '/event/';
 
 	function send(properties,geometry,id) {
 		var payload = {"properties":properties,"geometry":geometry};
-		if ($("#key").val()) {
+                if (typeof(window.crypto.signText)=="undefined" && typeof(window.msCrypto.signText)=="undefined")
+                {
+		    if ($("#key").val()) {
 			var oHeader = {alg: 'RS256', typ: 'JWT'};
 			var sHeader = JSON.stringify(oHeader);
 			var sPayload = JSON.stringify(payload);
 			var prvKey = KEYUTIL.getKey($("#key").val(), "password");
 			var sJWT = KJUR.jws.JWS.sign(oHeader.alg, sHeader, sPayload, prvKey);
 			payload["signature"] = sJWT;
-		}
+		    }
+                }
+                else
+                {
+                    var cryptoObj = window.crypto || window.msCrypto;
+                    var sPayload = JSON.stringify(payload);
+                    var sJWT = cryptoObj.signText(sPayload,"ask");
+
+                    if (!sJWT.startsWith("error"))
+                      payload["signature"] = sJWT;
+                    else
+                      alert("Erreur de signature : "+sJWT);
+                }
 		//
 		$.ajax({
 			url: id ? endpoint+id : endpoint,
