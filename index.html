@@ -65,17 +65,16 @@
 		
 
 	<script>
-
-if (typeof(window.crypto.signText)=="undefined" && typeof(window.msCrypto.signText)=="undefined")
-{
-  $("#keydiv").append('<textarea id="key" style="width: 95%;"></textarea>');
-}
-
 	var endpoint = '/event/';
+
+	if (typeof(window.crypto.signText)=="undefined" && (!window.msCrypto || typeof(window.msCrypto.signText)=="undefined"))
+	{
+	  $("#keydiv").append('<textarea id="key" style="width: 95%;"></textarea>');
+	}
 
 	function send(properties,geometry,id) {
 		var payload = {"properties":properties,"geometry":geometry};
-		if (typeof(window.crypto.signText)=="undefined" && typeof(window.msCrypto.signText)=="undefined")
+		if (typeof(window.crypto.signText)=="undefined" && (!window.msCrypto || typeof(window.msCrypto.signText)=="undefined"))
 		{
 			if ($("#key").val()) {
 				delete payload.properties.createdate;
